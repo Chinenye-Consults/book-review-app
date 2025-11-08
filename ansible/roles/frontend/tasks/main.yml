@@ -4,7 +4,7 @@
     dest: /opt/frontend
     version: main
 
-- name: Set ownership to azureuser for frontend app
+- name: Set ownership to chinenye for frontend app
   file:
     path: /opt/frontend
     owner: chinenye
@@ -29,10 +29,10 @@
   args:
     executable: /bin/bash
 
-- name: Start frontend app using PM2
+- name: Start frontend app using PM2 (production mode)
   shell: |
     cd /opt/frontend/frontend
-    pm2 start npm --name book-review-frontend -- run dev
+    pm2 start npm --name book-review-frontend -- start
   args:
     executable: /bin/bash
 
