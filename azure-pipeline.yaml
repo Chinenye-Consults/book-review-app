@@ -7,7 +7,7 @@ trigger:
 
 stages:
   - stage: DeployApp
-    displayName: "Deploy Application Code via Ansible"
+    displayName: "Deploy Book Review App via Ansible"
     jobs:
       - job: App_Deployment
         displayName: "Run Ansible Playbook to Deploy App"
@@ -15,26 +15,37 @@ stages:
           name: "linux-hosted-agent"
 
         steps:
+          # Step 1: Checkout the repository
+          - checkout: self
+            displayName: "Checkout repository code"
+
+          # Step 2: Install Ansible & SSH dependencies
           - script: |
               sudo apt update
               sudo apt install -y ansible sshpass
             displayName: "Install Ansible & SSH dependencies"
 
+          # Step 3: Download SSH private key from secure files
           - task: DownloadSecureFile@1
             name: download_ssh_key
             inputs:
               secureFile: "id_ed25519"
 
+          # Step 4: Configure SSH private key for the pipeline
           - script: |
               mkdir -p ~/.ssh
               cp $(download_ssh_key.secureFilePath) ~/.ssh/id_ed25519
               chmod 600 ~/.ssh/id_ed25519
-              echo "StrictHostKeyChecking no" > ~/.ssh/config
-            displayName: "Setup SSH Private Key"
+              echo -e "Host *\n    StrictHostKeyChecking no\n    UserKnownHostsFile=/dev/null\n" > ~/.ssh/config
+            displayName: "Setup SSH Private Key and Config"
 
+          # Step 5: Run Ansible playbook with absolute paths
           - script: |
-              cd ansible
-              ansible-playbook -i inventory.ini site.yml --ssh-extra-args "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+              ansible-playbook \
+                -i $(Build.SourcesDirectory)/ansible/inventory.ini \
+                $(Build.SourcesDirectory)/ansible/site.yml \
+                --ssh-extra-args "-i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no"
             displayName: "Run Ansible Playbook"
             env:
               ANSIBLE_HOST_KEY_CHECKING: "False"
+
