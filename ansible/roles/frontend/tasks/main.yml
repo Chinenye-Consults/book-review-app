@@ -46,12 +46,17 @@
     path: /home/chinenye/.pm2/dump.pm2
     state: absent
 
+- name: Check if PM2 logs directory exists
+  stat:
+    path: /home/chinenye/.pm2/logs
+  register: pm2_logs
+
 - name: Remove old PM2 logs (optional cleanup)
   file:
     path: /home/chinenye/.pm2/logs
     state: absent
     recurse: yes
-    when: ansible_facts['filesystem']['/home/chinenye/.pm2/logs'] is defined
+  when: pm2_logs.stat.exists
 
 - name: Recreate PM2 logs directory
   file:
