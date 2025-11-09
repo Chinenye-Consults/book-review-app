@@ -55,7 +55,6 @@
   file:
     path: /home/chinenye/.pm2/logs
     state: absent
-    recurse: yes
   when: pm2_logs.stat.exists
 
 - name: Recreate PM2 logs directory
