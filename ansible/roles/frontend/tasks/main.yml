@@ -21,13 +21,25 @@
     dest: /opt/frontend/frontend/.env
     content: |
       NEXT_PUBLIC_API_URL={{ backend_api_url }}
+      
+- name: Remove old build directory if exists
+  file:
+    path: /opt/frontend/frontend/.next
+    state: absent
 
-- name: Build frontend
+- name: Build frontend for production
   shell: |
     cd /opt/frontend/frontend
     npm run build
   args:
     executable: /bin/bash
+
+- name: Stop any existing PM2 frontend process
+  shell: |
+    pm2 delete book-review-frontend || true
+  args:
+    executable: /bin/bash
+    ignore_errors: yes
 
 - name: Start frontend app using PM2 (production mode)
   shell: |
