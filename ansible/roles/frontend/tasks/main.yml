@@ -51,6 +51,15 @@
     path: /home/chinenye/.pm2/logs
     state: absent
     recurse: yes
+    when: ansible_facts['filesystem']['/home/chinenye/.pm2/logs'] is defined
+
+- name: Recreate PM2 logs directory
+  file:
+    path: /home/chinenye/.pm2/logs
+    state: directory
+    owner: chinenye
+    group: chinenye
+    mode: '0775'
     
 - name: Ensure port 3000 is free
   shell: |
