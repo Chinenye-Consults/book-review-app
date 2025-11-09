@@ -39,8 +39,7 @@
     pm2 delete book-review-frontend || true
   args:
     executable: /bin/bash
-    ignore_errors: yes
-
+    
 - name: Start frontend app using PM2 (production mode)
   shell: |
     cd /opt/frontend/frontend
