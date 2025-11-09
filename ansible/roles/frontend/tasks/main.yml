@@ -34,9 +34,29 @@
   args:
     executable: /bin/bash
 
-- name: Stop any existing PM2 frontend process
+- name: Stop and delete any existing PM2 frontend process
   shell: |
     pm2 delete book-review-frontend || true
+    pm2 kill
+  args:
+    executable: /bin/bash
+    
+- name: Remove old PM2 dump file (erase ghost memory)
+  file:
+    path: /home/chinenye/.pm2/dump.pm2
+    state: absent
+
+- name: Remove old PM2 logs (optional cleanup)
+  file:
+    path: /home/chinenye/.pm2/logs
+    state: absent
+    recurse: yes
+    
+- name: Ensure port 3000 is free
+  shell: |
+    if sudo ss -tulpn | grep -q ":3000"; then
+      sudo fuser -k 3000/tcp
+    fi
   args:
     executable: /bin/bash
     
@@ -47,5 +67,10 @@
   args:
     executable: /bin/bash
 
-- name: Save PM2 process list
-  shell: pm2 save
+- name: Only save PM2 process if it started successfully
+  shell: |
+    if pm2 describe book-review-frontend | grep -q 'online'; then
+      pm2 save
+    fi
+  args:
+    executable: /bin/bash
